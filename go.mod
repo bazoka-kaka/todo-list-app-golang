@@ -1,4 +1,4 @@
-module auth-session
+module todo-list-app
 
 go 1.19
 
