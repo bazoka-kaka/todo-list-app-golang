@@ -42,7 +42,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	username := fmt.Sprintf("%s", r.Context().Value("username"))
-	tasks := db.Task[username]
+	tasks := []map[string]string{}
+	for _, item := range db.Task[username] {
+		task := map[string]string{
+			"task": item.Task,
+		}
+		if item.Done {
+			task["done"] = "true"
+		} else {
+			task["done"] = "false"
+		}
+		tasks = append(tasks, task)
+	}
 	data := map[string]interface{}{
 		"username": username,
 		"tasks":    tasks,
@@ -54,6 +65,20 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := tmpl.Execute(w, data); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal server error"))
+		return
+	}
+}
+
+func AddTask(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("./view/addTask.html")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal server error"))
+		return
+	}
+	if err := tmpl.Execute(w, nil); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte("Internal server error"))
 		return
@@ -99,6 +124,22 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	middleware.ShowMessage(w, "Login Successful!", 200)
 }
 
+func HandleAddTask(w http.ResponseWriter, r *http.Request) {
+	username := fmt.Sprintf("%s", r.Context().Value("username"))
+
+	var todo model.Todo
+
+	todo.Task = r.FormValue("task")
+	if r.FormValue("done") == "on" {
+		todo.Done = true
+	} else {
+		todo.Done = false
+	}
+
+	db.Task[username] = append(db.Task[username], todo)
+	middleware.ShowMessage(w, "Task Added!", 201)
+}
+
 func main() {
 	// without auth
 	http.Handle("/register", middleware.Get(http.HandlerFunc(Register)))
@@ -109,6 +150,9 @@ func main() {
 
 	// using auth
 	http.Handle("/", middleware.Auth(middleware.Get(http.HandlerFunc(Home))))
+	http.Handle("/task/add", middleware.Auth(middleware.Get(http.HandlerFunc(AddTask))))
+
+	http.Handle("/task/handler/add", middleware.Auth(middleware.Post(http.HandlerFunc(HandleAddTask))))
 
 	fmt.Println("server running on port 3000")
 	http.ListenAndServe(":3000", nil)
