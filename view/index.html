@@ -11,7 +11,7 @@
     <div class="p-5 bg-white shadow-xl">
       <h1 class="text-4xl font-semibold">{{ .username }}'s Todo List</h1>
       <hr class="mt-3 border-slate-400" />
-      <form action="/">
+      <form action="/task/handler/update">
         <ul class="my-4 text-lg">
           {{ range $val := .tasks }}
           <li class="flex items-center gap-2">
