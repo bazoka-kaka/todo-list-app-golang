@@ -94,6 +94,39 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func DeleteTask(w http.ResponseWriter, r *http.Request) {
+	username := fmt.Sprintf("%s", r.Context().Value("username"))
+
+	tasks := []map[string]string{}
+	for _, item := range db.Task[username] {
+		task := map[string]string{
+			"task": item.Task,
+		}
+		if item.Done {
+			task["done"] = "true"
+		} else {
+			task["done"] = "false"
+		}
+		tasks = append(tasks, task)
+	}
+	data := map[string]interface{}{
+		"username": username,
+		"tasks":    tasks,
+	}
+
+	tmpl, err := template.ParseFiles("./view/deleteTask.html")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal server error"))
+		return
+	}
+	if err := tmpl.Execute(w, data); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Internal server error"))
+		return
+	}
+}
+
 func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	username := r.FormValue("username")
 	password := r.FormValue("password")
@@ -176,6 +209,26 @@ func HandleAddTask(w http.ResponseWriter, r *http.Request) {
 	middleware.ShowMessage(w, "Task Added!", 201)
 }
 
+func HandleDeleteTask(w http.ResponseWriter, r *http.Request) {
+	username := fmt.Sprintf("%s", r.Context().Value("username"))
+
+	newTasks := []model.Todo{}
+	deleteExists := false
+	for _, item := range db.Task[username] {
+		if r.FormValue(item.Task) != "on" {
+			newTasks = append(newTasks, item)
+		} else {
+			deleteExists = true
+		}
+	}
+	db.Task[username] = newTasks
+	if deleteExists {
+		middleware.ShowMessage(w, "Task(s) Deleted!", 200)
+	} else {
+		middleware.ShowMessage(w, "No Task(s) Deleted", 200)
+	}
+}
+
 func main() {
 	// without auth
 	http.Handle("/register", middleware.Get(http.HandlerFunc(Register)))
@@ -188,8 +241,10 @@ func main() {
 	// using auth
 	http.Handle("/", middleware.Auth(middleware.Get(http.HandlerFunc(Home))))
 	http.Handle("/task/add", middleware.Auth(middleware.Get(http.HandlerFunc(AddTask))))
+	http.Handle("/task/delete", middleware.Auth(middleware.Get(http.HandlerFunc(DeleteTask))))
 
 	http.Handle("/task/handler/add", middleware.Auth(middleware.Post(http.HandlerFunc(HandleAddTask))))
+	http.Handle("/task/handler/delete", middleware.Auth(middleware.Post(http.HandlerFunc(HandleDeleteTask))))
 
 	fmt.Println("server running on port 3000")
 	http.ListenAndServe(":3000", nil)
