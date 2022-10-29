@@ -156,6 +156,13 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 func HandleAddTask(w http.ResponseWriter, r *http.Request) {
 	username := fmt.Sprintf("%s", r.Context().Value("username"))
 
+	for _, item := range db.Task[username] {
+		if item.Task == r.FormValue("task") {
+			middleware.ShowMessage(w, "Task Already Exists!", 400)
+			return
+		}
+	}
+
 	var todo model.Todo
 
 	todo.Task = r.FormValue("task")
