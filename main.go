@@ -42,6 +42,15 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	username := fmt.Sprintf("%s", r.Context().Value("username"))
+	// update tasks
+	for i, item := range db.Task[username] {
+		if r.FormValue(item.Task) == "on" {
+			db.Task[username][i].Done = true
+		} else {
+			db.Task[username][i].Done = false
+		}
+	}
+
 	tasks := []map[string]string{}
 	for _, item := range db.Task[username] {
 		task := map[string]string{
