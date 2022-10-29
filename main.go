@@ -42,14 +42,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	username := fmt.Sprintf("%s", r.Context().Value("username"))
-	// update tasks
-	for i, item := range db.Task[username] {
-		if r.FormValue(item.Task) == "on" {
-			db.Task[username][i].Done = true
-		} else {
-			db.Task[username][i].Done = false
-		}
-	}
 
 	tasks := []map[string]string{}
 	for _, item := range db.Task[username] {
@@ -198,6 +190,7 @@ func HandleAddTask(w http.ResponseWriter, r *http.Request) {
 
 	var todo model.Todo
 
+	todo.Id = uuid.NewString()
 	todo.Task = r.FormValue("task")
 	if r.FormValue("done") == "on" {
 		todo.Done = true
@@ -207,6 +200,20 @@ func HandleAddTask(w http.ResponseWriter, r *http.Request) {
 
 	db.Task[username] = append(db.Task[username], todo)
 	middleware.ShowMessage(w, "Task Added!", 201)
+}
+
+func HandleUpdateTask(w http.ResponseWriter, r *http.Request) {
+	username := fmt.Sprintf("%s", r.Context().Value("username"))
+
+	// update tasks
+	for i, item := range db.Task[username] {
+		if r.FormValue(item.Task) == "on" {
+			db.Task[username][i].Done = true
+		} else {
+			db.Task[username][i].Done = false
+		}
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
 func HandleDeleteTask(w http.ResponseWriter, r *http.Request) {
@@ -244,6 +251,7 @@ func main() {
 	http.Handle("/task/delete", middleware.Auth(middleware.Get(http.HandlerFunc(DeleteTask))))
 
 	http.Handle("/task/handler/add", middleware.Auth(middleware.Post(http.HandlerFunc(HandleAddTask))))
+	http.Handle("/task/handler/update", middleware.Auth(middleware.Get(http.HandlerFunc(HandleUpdateTask))))
 	http.Handle("/task/handler/delete", middleware.Auth(middleware.Post(http.HandlerFunc(HandleDeleteTask))))
 
 	fmt.Println("server running on port 3000")
