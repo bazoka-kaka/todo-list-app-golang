@@ -4,20 +4,26 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <title>{{ .message }}</title>
   </head>
-  <body>
-    <h1>{{ .message }}</h1>
+  <body class="flex items-center justify-center h-screen bg-blue-400">
+    <div class="p-5 bg-white shadow-xl">
+    <h1 class="text-4xl font-semibold">{{ .message }}</h1>
+    <div class="mt-4">
     {{ if or (eq .message "Wrong Password or Username!") (eq .message "Register Success!") }}
-    <a href="/login">Login</a>
+    <a class="text-blue-600 transition duration-200 hover:text-red-600" href="/login">Login</a>
     {{ else if (eq .message "You are not Logged in!") }}
-    <a href="/register">Register</a>
-    <br />
-    <a href="/login">Login</a>
+    <div class="flex flex-col items-center">
+    <a class="inline-block p-2 mt-4 font-semibold text-white transition duration-200 bg-blue-600 rounded-lg hover:bg-blue-500" href="/register">Register</a>
+    <a class="mt-2 text-blue-600 transition duration-200 hover:text-red-600" href="/login">Login</a>
+    </div>
     {{ else if or (eq .message "Password Doesn't Match!") (eq .message "User Already Exist!") }}
-    <a href="/register">Register</a>
+    <a class="text-blue-600 transition duration-200 hover:text-red-600" href="/register">Register</a>
     {{ else }}
-    <a href="/">Home</a>
+    <a class="text-blue-600 transition duration-200 hover:text-red-600" href="/">Home</a>
     {{ end }}
+    </div>
+    </div>
   </body>
 </html>
