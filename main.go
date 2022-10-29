@@ -133,6 +133,26 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	middleware.ShowMessage(w, "Login Successful!", 200)
 }
 
+func HandleLogout(w http.ResponseWriter, r *http.Request) {
+	c, err := r.Cookie("session_token")
+	if err != nil {
+		middleware.ShowMessage(w, "You are not Logged in!", 401)
+		return
+	}
+	sessionToken := c.Value
+
+	delete(db.Sessions, sessionToken)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "session_token",
+		Value:   "",
+		Path:    "/",
+		Expires: time.Now(),
+	})
+
+	middleware.ShowMessage(w, "Logout Successful!", 200)
+}
+
 func HandleAddTask(w http.ResponseWriter, r *http.Request) {
 	username := fmt.Sprintf("%s", r.Context().Value("username"))
 
@@ -156,6 +176,7 @@ func main() {
 
 	http.Handle("/user/register", middleware.Post(http.HandlerFunc(HandleRegister)))
 	http.Handle("/user/login", middleware.Post(http.HandlerFunc(HandleLogin)))
+	http.Handle("/user/logout", middleware.Get(http.HandlerFunc(HandleLogout)))
 
 	// using auth
 	http.Handle("/", middleware.Auth(middleware.Get(http.HandlerFunc(Home))))
