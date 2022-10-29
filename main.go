@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"text/template"
 	"time"
 	"todo-list-app/db"
@@ -254,6 +255,7 @@ func main() {
 	http.Handle("/task/handler/update", middleware.Auth(middleware.Get(http.HandlerFunc(HandleUpdateTask))))
 	http.Handle("/task/handler/delete", middleware.Auth(middleware.Post(http.HandlerFunc(HandleDeleteTask))))
 
-	fmt.Println("server running on port 3000")
-	http.ListenAndServe(":3000", nil)
+	PORT := os.Getenv("PORT")
+	fmt.Println("server running on port " + PORT)
+	http.ListenAndServe(":"+PORT, nil)
 }
