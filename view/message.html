@@ -7,10 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>{{ .message }}</title>
   </head>
-  <body class="flex items-center justify-center h-screen bg-blue-400">
+  <body class="flex items-center justify-center h-screen px-5 bg-blue-400">
     <div class="p-5 bg-white shadow-xl">
-    <h1 class="text-4xl font-semibold">{{ .message }}</h1>
-    <div class="mt-4">
+    <h1 class="text-4xl font-semibold text-center md:text-left">{{ .message }}</h1>
+    <div class="mt-4 text-center md:text-left">
     {{ if or (eq .message "Wrong Password or Username!") (eq .message "Register Success!") }}
     <a class="text-blue-600 transition duration-200 hover:text-red-600" href="/login">Login</a>
     {{ else if or (eq .message "You are not Logged in!") (eq .message "Logout Successful!") }}
