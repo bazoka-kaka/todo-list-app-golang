@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"text/template"
 	"time"
 	"todo-list-app/db"
@@ -128,6 +127,14 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		middleware.ShowMessage(w, "Password Doesn't Match!", 400)
 		return
 	}
+
+	for key := range db.Users {
+		if key == username {
+			middleware.ShowMessage(w, "User Already Exist!", 400)
+			return
+		}
+	}
+
 	db.Users[username] = password
 	db.Task[username] = []model.Todo{}
 	middleware.ShowMessage(w, "Register Success!", 200)
@@ -255,7 +262,8 @@ func main() {
 	http.Handle("/task/handler/update", middleware.Auth(middleware.Get(http.HandlerFunc(HandleUpdateTask))))
 	http.Handle("/task/handler/delete", middleware.Auth(middleware.Post(http.HandlerFunc(HandleDeleteTask))))
 
-	PORT := os.Getenv("PORT")
+	// PORT := os.Getenv("PORT")
+	PORT := "3000"
 	fmt.Println("server running on port " + PORT)
 	http.ListenAndServe(":"+PORT, nil)
 }
