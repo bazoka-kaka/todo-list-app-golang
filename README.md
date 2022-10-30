@@ -17,4 +17,3 @@ Aplikasi Web ini merupakan sebuah aplikasi Todolist yang mengimplementasikan fit
 4. Create Todo List
 5. Read Todo List
 6. Delete Todo List
-7. Reset Todo List
